@@ -1,24 +1,37 @@
 import { StatusBar } from "expo-status-bar";
-import React from "react";
+import React, { useEffect } from "react";
 import { StyleSheet, View, SafeAreaView, TextInput } from "react-native";
-import {
-  RadioButton,
-  Modal,
-  Portal,
-  Button,
-  Text,
-  Provider,
-} from "react-native-paper";
+import { RadioButton, Modal, Button, Text } from "react-native-paper";
+
+import { Ionicons } from "@expo/vector-icons";
 
 export default function App() {
+  const [todos, setTodos] = React.useState([]);
   const [checked, setChecked] = React.useState(false);
   const [visible, setVisible] = React.useState(false);
 
+  //Get all todos from the server
+  useEffect(() => {
+    const getTodos = async () => {
+      const response = await fetch("https://restapi-mongo.onrender.com/todos");
+      const data = await response.json();
+      setTodos(data);
+    };
+    getTodos();
+  }, [todos]);
+
+  const todoComplete = async (id) => {};
+
+  //open modal
   const modalPop = () => {
     setVisible(true);
-    console.log("modal pop");
   };
+
+  //close modal
   const hideModal = () => setVisible(false);
+
+  //add Task
+  const addTask = () => {};
 
   const containerStyle = {
     backgroundColor: "white",
@@ -26,35 +39,43 @@ export default function App() {
     height: 400,
     justifyContent: "flex-start",
     alignItems: "center",
+    zIndex: 99,
   };
   return (
     <SafeAreaView style={styles.container}>
       <Text style={styles.header_text}>All Tasks</Text>
       <StatusBar style="auto" />
       <View style={styles.tasks}>
-        <View style={styles.oneTask}>
-          <Text>Create new Project</Text>
-          <RadioButton
-            value="first"
-            status={checked ? "checked" : "unchecked"}
-            onPress={() => setChecked(!checked)}
-          />
-        </View>
+        {todos.map((todo, index) => {
+          return (
+            <View key={todo._id} style={styles.oneTask}>
+              <Text>{todo.title}</Text>
+              <RadioButton
+                status={checked ? "checked" : "unchecked"}
+                onPress={todoComplete.bind(null, todo._id)}
+              />
+            </View>
+          );
+        })}
       </View>
       <View style={styles.addTask}>
-        <Text onPress={modalPop}>+</Text>
+        <Ionicons
+          onPress={modalPop}
+          name="md-add-circle"
+          size={64}
+          color="blue"
+        />
       </View>
-      <Provider>
-        <Portal>
-          <Modal
-            visible={visible}
-            onDismiss={hideModal}
-            contentContainerStyle={containerStyle}
-          >
-            <Text>Create New Task</Text>
-          </Modal>
-        </Portal>
-      </Provider>
+
+      <Modal
+        visible={visible}
+        onDismiss={hideModal}
+        contentContainerStyle={containerStyle}
+      >
+        <Text>Create New Task</Text>
+        <TextInput placeholder="Add Todo" />
+        <Button onPress={addTask}>Add</Button>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -90,6 +111,7 @@ const styles = StyleSheet.create({
     marginTop: 20,
     paddingHorizontal: 20,
     marginVertical: 6,
+    zIndex: -1,
   },
   addTask: {
     position: "absolute",
