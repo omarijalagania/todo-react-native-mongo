@@ -111,72 +111,69 @@ export default function App() {
 
   return (
     <>
-      {isLoading ? (
-        <Spinner />
-      ) : (
-        <SafeAreaView style={styles.container}>
-          <Text style={styles.header_text}>All Tasks</Text>
-          <StatusBar style="auto" />
-          <ScrollView>
-            <View style={styles.tasks}>
-              {todos.map((todo, index) => {
-                return (
-                  <View key={todo._id} style={styles.oneTask}>
-                    <Text>{todo.title}</Text>
-                    <View style={{ flexDirection: "row" }}>
-                      <RadioButton
-                        value={todo._id}
-                        status={todo.isComolete ? "checked" : "unchecked"}
-                        onPress={todoComplete.bind(null, todo._id)}
-                      />
-                      <Ionicons
-                        onPress={removeTodo.bind(null, todo._id)}
-                        name="md-remove-circle"
-                        size={32}
-                        color="red"
-                      />
-                    </View>
+      <SafeAreaView style={styles.container}>
+        <Text style={styles.header_text}>All Tasks</Text>
+        <StatusBar style="auto" />
+        <ScrollView>
+          <View style={styles.tasks}>
+            {todos.map((todo, index) => {
+              return (
+                <View key={todo._id} style={styles.oneTask}>
+                  <Text>{todo.title}</Text>
+                  <View style={{ flexDirection: "row" }}>
+                    <RadioButton
+                      value={todo._id}
+                      status={todo.isComolete ? "checked" : "unchecked"}
+                      onPress={todoComplete.bind(null, todo._id)}
+                    />
+                    <Ionicons
+                      onPress={removeTodo.bind(null, todo._id)}
+                      name="md-remove-circle"
+                      size={32}
+                      color="red"
+                    />
                   </View>
-                );
-              })}
-            </View>
-          </ScrollView>
-          <View style={styles.addTask}>
-            <Ionicons
-              onPress={modalPop}
-              name="md-add-circle"
-              size={64}
-              color="blue"
-            />
+                </View>
+              );
+            })}
           </View>
+        </ScrollView>
+        <View style={styles.addTask}>
+          <Ionicons
+            onPress={modalPop}
+            name="md-add-circle"
+            size={64}
+            color="blue"
+          />
+        </View>
 
-          <Modal animationType="slide" visible={visible}>
-            <Text
-              style={{
-                marginBottom: 20,
-                fontWeight: "bold",
-                fontSize: 30,
-                textAlign: "center",
-                marginTop: 30,
-              }}
-            >
-              Create New Task
-            </Text>
-            <View style={styles.modalView}>
-              <TextInput
-                onChangeText={setText}
-                value={text}
-                style={styles.inputText}
-                placeholder="Add Todo"
-              />
-              <View style={{ flexDirection: "row" }}>
-                <Button onPress={addTodo}>Add</Button>
-                <Button onPress={hideModal}>Close</Button>
-              </View>
+        <Modal animationType="slide" visible={visible}>
+          <Text
+            style={{
+              marginBottom: 20,
+              fontWeight: "bold",
+              fontSize: 30,
+              textAlign: "center",
+              marginTop: 30,
+            }}
+          >
+            Create New Task
+          </Text>
+          <View style={styles.modalView}>
+            <TextInput
+              onChangeText={setText}
+              value={text}
+              style={styles.inputText}
+              placeholder="Add Todo"
+            />
+            <View style={{ flexDirection: "row" }}>
+              <Button onPress={addTodo}>Add</Button>
+              <Button onPress={hideModal}>Close</Button>
             </View>
-          </Modal>
-        </SafeAreaView>
-      )}
+          </View>
+        </Modal>
+      </SafeAreaView>
+      {isLoading && <Spinner />}
     </>
   );
 }

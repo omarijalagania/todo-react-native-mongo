@@ -1,26 +1,9 @@
-import { ActivityIndicator, StyleSheet, View, Text } from "react-native";
+import * as Progress from "react-native-progress";
+
 import React from "react";
 
 const Spinner = () => {
-  return (
-    <View style={[styles.container, styles.horizontal]}>
-      <ActivityIndicator size="large" color="blue" />
-    </View>
-  );
+  return <Progress.Bar indeterminate={true} progress={0.4} width={null} />;
 };
 
 export default Spinner;
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: "center",
-    backgroundColor: "transparent",
-    alignItems: "center",
-  },
-  horizontal: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    padding: 10,
-  },
-});
