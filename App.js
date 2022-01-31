@@ -1,5 +1,6 @@
 import { StatusBar } from "expo-status-bar";
 import React, { useEffect } from "react";
+import Spinner from "./components/Spinner";
 import {
   StyleSheet,
   View,
@@ -17,31 +18,39 @@ export default function App() {
   const [checked, setChecked] = React.useState(false);
   const [visible, setVisible] = React.useState(false);
   const [text, setText] = React.useState("");
+  const [isLoading, setIsLoading] = React.useState(false);
 
   //Get all todos from the server
   useEffect(() => {
     try {
       const getTodos = async () => {
+        setIsLoading(true);
         const response = await fetch(
           "https://restapi-mongo.onrender.com/todos"
         );
         const data = await response.json();
         setTodos(data);
+        setIsLoading(false);
       };
       getTodos();
     } catch (error) {
+      setIsLoading(false);
       alert(error);
     }
-  }, [todos, checked]);
+  }, [setTodos, checked]);
 
   //complete todo
   const todoComplete = async (id) => {
     try {
+      setIsLoading(true);
       const response = await fetch(
         `https://restapi-mongo.onrender.com/complete/todo/${id}`
       );
       const data = await response.json();
+      setChecked(data);
+      setIsLoading(false);
     } catch (error) {
+      setIsLoading(false);
       alert(error);
     }
   };
@@ -49,6 +58,7 @@ export default function App() {
   //add Todo
   const addTodo = async () => {
     if (text) {
+      setIsLoading(true);
       const response = await fetch(
         `https://restapi-mongo.onrender.com/add/todos/`,
         {
@@ -62,8 +72,12 @@ export default function App() {
           }),
         }
       );
+      const data = await response.json();
+      setChecked(data);
+      setIsLoading(false);
       setVisible(false);
     } else {
+      setIsLoading(false);
       alert("Please enter a todo");
     }
   };
@@ -71,13 +85,18 @@ export default function App() {
   //delete todo
   const removeTodo = async (id) => {
     try {
+      setIsLoading(true);
       const response = await fetch(
         `https://restapi-mongo.onrender.com/delete/todos/${id}`,
         {
           method: "DELETE",
         }
       );
+      const data = await response.json();
+      setChecked(data);
+      setIsLoading(false);
     } catch (error) {
+      setIsLoading(false);
       alert(error);
     }
   };
@@ -90,91 +109,75 @@ export default function App() {
   //close modal
   const hideModal = () => setVisible(false);
 
-  //Modal styles
-  const containerStyle = {
-    backgroundColor: "white",
-    padding: 20,
-    height: 400,
-    justifyContent: "flex-start",
-    alignItems: "center",
-    zIndex: 99,
-  };
-
-  //if No todos
-  if (todos.length === 0) {
-    return (
-      <View style={styles.noTodo}>
-        <Text>No Todos</Text>
-      </View>
-    );
-  }
-
   return (
-    <SafeAreaView style={styles.container}>
-      <Text style={styles.header_text}>All Tasks</Text>
-      <StatusBar style="auto" />
-      <ScrollView>
-        <View style={styles.tasks}>
-          {todos.map((todo, index) => {
-            return (
-              <View key={todo._id} style={styles.oneTask}>
-                <Text>{todo.title}</Text>
-                <View style={{ flexDirection: "row" }}>
-                  <RadioButton
-                    value={todo._id}
-                    status={todo.isComolete ? "checked" : "unchecked"}
-                    onPress={todoComplete.bind(null, todo._id)}
-                  />
-                  <Ionicons
-                    onPress={removeTodo.bind(null, todo._id)}
-                    name="md-remove-circle"
-                    size={32}
-                    color="red"
-                  />
-                </View>
-              </View>
-            );
-          })}
-        </View>
-      </ScrollView>
-      <View style={styles.addTask}>
-        <Ionicons
-          onPress={modalPop}
-          name="md-add-circle"
-          size={64}
-          color="blue"
-        />
-      </View>
-
-      <Modal animationType="slide" visible={visible}>
-        <Text
-          style={{
-            marginBottom: 20,
-            fontWeight: "bold",
-            fontSize: 30,
-            textAlign: "center",
-            marginTop: 30,
-          }}
-        >
-          Create New Task
-        </Text>
-        <View style={styles.modalView}>
-          <TextInput
-            onChangeText={setText}
-            value={text}
-            style={styles.inputText}
-            placeholder="Add Todo"
-          />
-          <View style={{ flexDirection: "row" }}>
-            <Button onPress={addTodo}>Add</Button>
-            <Button onPress={hideModal}>Close</Button>
+    <>
+      {isLoading ? (
+        <Spinner />
+      ) : (
+        <SafeAreaView style={styles.container}>
+          <Text style={styles.header_text}>All Tasks</Text>
+          <StatusBar style="auto" />
+          <ScrollView>
+            <View style={styles.tasks}>
+              {todos.map((todo, index) => {
+                return (
+                  <View key={todo._id} style={styles.oneTask}>
+                    <Text>{todo.title}</Text>
+                    <View style={{ flexDirection: "row" }}>
+                      <RadioButton
+                        value={todo._id}
+                        status={todo.isComolete ? "checked" : "unchecked"}
+                        onPress={todoComplete.bind(null, todo._id)}
+                      />
+                      <Ionicons
+                        onPress={removeTodo.bind(null, todo._id)}
+                        name="md-remove-circle"
+                        size={32}
+                        color="red"
+                      />
+                    </View>
+                  </View>
+                );
+              })}
+            </View>
+          </ScrollView>
+          <View style={styles.addTask}>
+            <Ionicons
+              onPress={modalPop}
+              name="md-add-circle"
+              size={64}
+              color="blue"
+            />
           </View>
-        </View>
-      </Modal>
-      {/* afer modal */}
 
-      {/* after modal end */}
-    </SafeAreaView>
+          <Modal animationType="slide" visible={visible}>
+            <Text
+              style={{
+                marginBottom: 20,
+                fontWeight: "bold",
+                fontSize: 30,
+                textAlign: "center",
+                marginTop: 30,
+              }}
+            >
+              Create New Task
+            </Text>
+            <View style={styles.modalView}>
+              <TextInput
+                onChangeText={setText}
+                value={text}
+                style={styles.inputText}
+                placeholder="Add Todo"
+              />
+              <View style={{ flexDirection: "row" }}>
+                <Button onPress={addTodo}>Add</Button>
+                <Button onPress={hideModal}>Close</Button>
+              </View>
+            </View>
+          </Modal>
+        </SafeAreaView>
+      )}
+    </>
   );
 }
 
@@ -191,6 +194,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     fontSize: 40,
     fontWeight: "bold",
+    zIndex: 1,
   },
   header_text: {
     marginTop: 50,
@@ -236,6 +240,7 @@ const styles = StyleSheet.create({
   addTask: {
     position: "absolute",
     bottom: 30,
+    zIndex: 999,
   },
   modalView: {
     flex: 1,

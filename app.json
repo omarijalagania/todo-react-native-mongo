@@ -5,7 +5,13 @@
     "version": "1.0.0",
     "assetBundlePatterns": [
       "**/*"
-    ]
+    ],
+    "android": {
+      "package": "com.omari_jalagania.todonativemongo"
+    },
+    "ios": {
+      "bundleIdentifier": "yes"
+    }
   },
   "name": "todo-native-mongo"
 }
