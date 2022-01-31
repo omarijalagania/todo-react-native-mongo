@@ -1,7 +1,14 @@
 import { StatusBar } from "expo-status-bar";
 import React, { useEffect } from "react";
-import { StyleSheet, View, SafeAreaView, TextInput } from "react-native";
-import { RadioButton, Modal, Button, Text } from "react-native-paper";
+import {
+  StyleSheet,
+  View,
+  SafeAreaView,
+  TextInput,
+  Modal,
+  ScrollView,
+} from "react-native";
+import { RadioButton, Button, Text } from "react-native-paper";
 
 import { Ionicons } from "@expo/vector-icons";
 
@@ -9,18 +16,73 @@ export default function App() {
   const [todos, setTodos] = React.useState([]);
   const [checked, setChecked] = React.useState(false);
   const [visible, setVisible] = React.useState(false);
+  const [text, setText] = React.useState("");
 
   //Get all todos from the server
   useEffect(() => {
-    const getTodos = async () => {
-      const response = await fetch("https://restapi-mongo.onrender.com/todos");
-      const data = await response.json();
-      setTodos(data);
-    };
-    getTodos();
-  }, [todos]);
+    try {
+      const getTodos = async () => {
+        const response = await fetch(
+          "https://restapi-mongo.onrender.com/todos"
+        );
+        const data = await response.json();
+        setTodos(data);
+      };
+      getTodos();
+    } catch (error) {
+      alert(error);
+    }
+  }, [todos, checked]);
 
-  const todoComplete = async (id) => {};
+  //complete todo
+  const todoComplete = async (id) => {
+    try {
+      const response = await fetch(
+        `https://restapi-mongo.onrender.com/complete/todo/${id}`
+      );
+      const data = await response.json();
+      //setTodos(data);
+      setChecked(data.isComolete);
+    } catch (error) {
+      alert(error);
+    }
+  };
+
+  //add Todo
+  const addTodo = async () => {
+    if (text) {
+      const response = await fetch(
+        `https://restapi-mongo.onrender.com/add/todos/`,
+        {
+          method: "POST",
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            title: text,
+          }),
+        }
+      );
+      setVisible(false);
+    } else {
+      alert("Please enter a todo");
+    }
+  };
+
+  //delete todo
+  const removeTodo = async (id) => {
+    try {
+      const response = await fetch(
+        `https://restapi-mongo.onrender.com/delete/todos/${id}`,
+        {
+          method: "DELETE",
+        }
+      );
+    } catch (error) {
+      alert(error);
+    }
+  };
 
   //open modal
   const modalPop = () => {
@@ -30,9 +92,7 @@ export default function App() {
   //close modal
   const hideModal = () => setVisible(false);
 
-  //add Task
-  const addTask = () => {};
-
+  //Modal styles
   const containerStyle = {
     backgroundColor: "white",
     padding: 20,
@@ -41,23 +101,44 @@ export default function App() {
     alignItems: "center",
     zIndex: 99,
   };
+
+  //if No todos
+  if (todos.length === 0) {
+    return (
+      <View style={styles.noTodo}>
+        <Text>No Todos</Text>
+      </View>
+    );
+  }
+
   return (
     <SafeAreaView style={styles.container}>
       <Text style={styles.header_text}>All Tasks</Text>
-      <StatusBar style="auto" />
-      <View style={styles.tasks}>
-        {todos.map((todo, index) => {
-          return (
-            <View key={todo._id} style={styles.oneTask}>
-              <Text>{todo.title}</Text>
-              <RadioButton
-                status={checked ? "checked" : "unchecked"}
-                onPress={todoComplete.bind(null, todo._id)}
-              />
-            </View>
-          );
-        })}
-      </View>
+      <ScrollView>
+        <StatusBar style="auto" />
+        <View style={styles.tasks}>
+          {todos.map((todo, index) => {
+            return (
+              <View key={todo._id} style={styles.oneTask}>
+                <Text>{todo.title}</Text>
+                <View style={{ flexDirection: "row" }}>
+                  <RadioButton
+                    value={todo._id}
+                    status={checked ? "checked" : "unchecked"}
+                    onPress={todoComplete.bind(null, todo._id)}
+                  />
+                  <Ionicons
+                    onPress={removeTodo.bind(null, todo._id)}
+                    name="md-remove-circle"
+                    size={32}
+                    color="red"
+                  />
+                </View>
+              </View>
+            );
+          })}
+        </View>
+      </ScrollView>
       <View style={styles.addTask}>
         <Ionicons
           onPress={modalPop}
@@ -67,15 +148,34 @@ export default function App() {
         />
       </View>
 
-      <Modal
-        visible={visible}
-        onDismiss={hideModal}
-        contentContainerStyle={containerStyle}
-      >
-        <Text>Create New Task</Text>
-        <TextInput placeholder="Add Todo" />
-        <Button onPress={addTask}>Add</Button>
+      <Modal animationType="slide" visible={visible}>
+        <Text
+          style={{
+            marginBottom: 20,
+            fontWeight: "bold",
+            fontSize: 30,
+            textAlign: "center",
+            marginTop: 30,
+          }}
+        >
+          Create New Task
+        </Text>
+        <View style={styles.modalView}>
+          <TextInput
+            onChangeText={setText}
+            value={text}
+            style={styles.inputText}
+            placeholder="Add Todo"
+          />
+          <View style={{ flexDirection: "row" }}>
+            <Button onPress={addTodo}>Add</Button>
+            <Button onPress={hideModal}>Close</Button>
+          </View>
+        </View>
       </Modal>
+      {/* afer modal */}
+
+      {/* after modal end */}
     </SafeAreaView>
   );
 }
@@ -87,10 +187,18 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     alignItems: "center",
   },
+  noTodo: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    fontSize: 40,
+    fontWeight: "bold",
+  },
   header_text: {
     marginTop: 50,
     fontSize: 30,
     fontWeight: "bold",
+    color: "gray",
   },
   tasks: {
     justifyContent: "center",
@@ -103,18 +211,37 @@ const styles = StyleSheet.create({
     alignItems: "center",
     width: 340,
     height: 80,
-    shadowOpacity: 0.2,
     borderRadius: 10,
-    elevation: 10,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
     marginTop: 20,
     paddingHorizontal: 20,
     marginVertical: 6,
+    shadowColor: "black",
+    shadowOpacity: 0.2,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 10,
+    elevation: 3,
+    backgroundColor: "white",
     zIndex: -1,
+  },
+  inputText: {
+    width: 300,
+    padding: 10,
+    borderRadius: 10,
+    shadowColor: "black",
+    shadowOpacity: 0.2,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 10,
+    elevation: 3,
+    backgroundColor: "white",
+    marginBottom: 20,
   },
   addTask: {
     position: "absolute",
     bottom: 30,
+  },
+  modalView: {
+    flex: 1,
+    marginTop: 50,
+    alignItems: "center",
   },
 });
