@@ -41,8 +41,6 @@ export default function App() {
         `https://restapi-mongo.onrender.com/complete/todo/${id}`
       );
       const data = await response.json();
-      //setTodos(data);
-      setChecked(data.isComolete);
     } catch (error) {
       alert(error);
     }
@@ -114,8 +112,8 @@ export default function App() {
   return (
     <SafeAreaView style={styles.container}>
       <Text style={styles.header_text}>All Tasks</Text>
+      <StatusBar style="auto" />
       <ScrollView>
-        <StatusBar style="auto" />
         <View style={styles.tasks}>
           {todos.map((todo, index) => {
             return (
@@ -124,7 +122,7 @@ export default function App() {
                 <View style={{ flexDirection: "row" }}>
                   <RadioButton
                     value={todo._id}
-                    status={checked ? "checked" : "unchecked"}
+                    status={todo.isComolete ? "checked" : "unchecked"}
                     onPress={todoComplete.bind(null, todo._id)}
                   />
                   <Ionicons
