@@ -1,0 +1,11 @@
+{
+  "expo": {
+    "name": "todo-native-mongo",
+    "slug": "todo-native-mongo",
+    "version": "1.0.0",
+    "assetBundlePatterns": [
+      "**/*"
+    ]
+  },
+  "name": "todo-native-mongo"
+}
